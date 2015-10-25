@@ -11,7 +11,7 @@ lib/%.js: src/%.iced
 	$(ICED) -I browserify -c -o `dirname $@` $<
 
 $(BUILD_STAMP): \
-	lib/base58.js \
+	lib/encoding.js \
 	lib/stream.js \
 	lib/main.js
 	date > $@
