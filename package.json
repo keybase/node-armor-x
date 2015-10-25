@@ -16,6 +16,7 @@
   "author": "Maxwell Krohn",
   "devDependencies": {
     "iced-coffee-script": "^108.0.9",
-    "iced-test": "0.0.22"
+    "iced-test": "0.0.22",
+    "istanbul": "^0.4.0"
   }
 }

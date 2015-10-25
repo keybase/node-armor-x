@@ -28,7 +28,7 @@ exports.Encoding = class Encoding
       @alphabet[r.intValue()]
     chars.reverse()
     padlen = @encoded_len(block.length) - chars.length
-    pad = ( @alphabet[0] for i in [0...padlen])
+    pad = ( @alphabet[0] for i in [0...padlen] by 1)
     (pad.concat chars).join ''
 
   # for the given input len, how long is it when encoded?
@@ -54,10 +54,13 @@ exports.Encoding = class Encoding
     for c,src_p in src when (d = @decode_map[c])?
       res = res.multiply(@base_big).add(nbv(d))
       break if ++consumed is @out_block_len
-    res = new Buffer res.toByteArray()
-    padlen = @decoded_len(consumed) - res.length
-    pad = new Buffer (0 for i in [0...padlen])
-    [ Buffer.concat([pad, res]), src[(src_p+1)...] ]
+    ret = if consumed is 0 then new Buffer []
+    else
+      res = new Buffer res.toByteArray()
+      padlen = @decoded_len(consumed) - res.length
+      pad = new Buffer (0 for i in [0...padlen] by 1)
+      Buffer.concat [pad, res]
+    [ ret, src[(src_p+1)...] ]
 
   decoded_len : (n) ->
     if n is @out_block_len then @in_block_len
