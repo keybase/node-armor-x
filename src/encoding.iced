@@ -74,9 +74,3 @@ exports.std_alphabet = std_alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefgh
 exports.std_encoding = std_encoding = new Encoding std_alphabet, 19
 
 #=====================================================================
-
-encoded = std_encoding.encode new Buffer [0...300]
-console.log encoded
-decoded = std_encoding.decode encoded
-console.log decoded
-console.log decoded.toString 'hex'
