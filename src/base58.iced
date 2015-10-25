@@ -12,7 +12,7 @@ exports.Encoding = class Encoding
     if @alphabet.length isnt @base
       throw new Error "Encoder alphabet length must be 58 chars"
     @decode_map = {}
-    for a,i in @alphabet
+    for a,i in (new Buffer @alphabet, 'utf8')
       @decode_map[a] = i
 
   # encoder a buffer of binary data into a base58-string encoding
@@ -41,24 +41,32 @@ exports.Encoding = class Encoding
         out += Math.ceil(rem*8/@log58)
       out
 
-#=====================================================================
+  decode : (src) ->
+    src = new Buffer src, 'utf8'
+    bufs = while src.length
+      [dst,src] = @decode_block src
+      dst
+    Buffer.concat bufs
 
-class Foo
+  decode_block : (src) ->
+    res = nbv 0
+    consumed = 0
+    for c,src_p in src when (d = @decode_map[c])?
+      res = res.multiply(@base_big).add(nbv(d))
+      break if ++consumed is @out_block_len
+    res = new Buffer res.toByteArray()
+    padlen = @decoded_len(consumed) - res.length
+    pad = new Buffer (0 for i in [0...padlen])
+    [ Buffer.concat([pad, res]), src[(src_p+1)...] ]
 
-  decode: (str) ->
-    num = BigInteger.ZERO
-    base = BigInteger.ONE
-    i = 0
-    for c,i in str
-      break unless c is @alphabet[0]
-    start = i
-    pad = new Buffer (0 for i in [0...start])
-    for c,i in str[start...] by -1
-      unless (char_index = @lookup[c])?
-        throw new Error('Value passed is not a valid BaseX string.')
-      num = num.add base.multiply nbv char_index
-      base = base.multiply @basebn
-    Buffer.concat [pad, new Buffer(num.toByteArray()) ]
+  decoded_len : (n) ->
+    if n is @out_block_len then @in_block_len
+    else
+      nblocks = ~~(n / @out_block_len)
+      out = nblocks * @in_block_len
+      if (rem = n % @out_block_len) > 0
+        out += Math.floor(rem * @log58 / 8 )
+      out
 
 #=====================================================================
 
@@ -67,4 +75,8 @@ exports.std_encoding = std_encoding = new Encoding std_alphabet, 19
 
 #=====================================================================
 
-console.log std_encoding.encode new Buffer [0...300]
+encoded = std_encoding.encode new Buffer [0...300]
+console.log encoded
+decoded = std_encoding.decode encoded
+console.log decoded
+console.log decoded.toString 'hex'
