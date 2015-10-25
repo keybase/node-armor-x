@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "A Base58 19/26-rate encoder",
   "homepage": "https://github.com/keybase/node-armor58",
-  "main": "./lib/index.js",
+  "main": "./lib/main.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/keybase/node-armor58.git"
