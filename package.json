@@ -1,0 +1,20 @@
+{
+  "name": "armor58",
+  "version": "0.0.0",
+  "description": "A Base58 19/26-rate encoder",
+  "homepage": "https://github.com/keybase/node-armor58",
+  "main": "./lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/keybase/node-armor58.git"
+  },
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "iced-runtime": "^1.0.3"
+  },
+  "author": "Maxwell Krohn",
+  "devDependencies": {
+    "iced-coffee-script": "^108.0.9",
+    "iced-test": "0.0.22"
+  }
+}
