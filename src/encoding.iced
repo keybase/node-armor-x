@@ -5,12 +5,10 @@
 exports.Encoding = class Encoding
 
   constructor : (@alphabet, @in_block_len) ->
-    @base = 58
+    @base = @alphabet.length
     @base_big = nbv @base
-    @log58 = Math.log2(@base)
-    @out_block_len = Math.ceil(8 * @in_block_len / @log58)
-    if @alphabet.length isnt @base
-      throw new Error "Encoder alphabet length must be 58 chars"
+    @log_base = Math.log2(@base)
+    @out_block_len = Math.ceil(8 * @in_block_len / @log_base)
     @decode_map = {}
     for a,i in (new Buffer @alphabet, 'utf8')
       @decode_map[a] = i
@@ -38,7 +36,7 @@ exports.Encoding = class Encoding
       nblocks = ~~(n / @in_block_len)
       out = nblocks * @out_block_len
       if (rem = n % @in_block_len) > 0
-        out += Math.ceil(rem*8/@log58)
+        out += Math.ceil(rem*8/@log_base)
       out
 
   decode : (src) ->
@@ -68,7 +66,7 @@ exports.Encoding = class Encoding
       nblocks = ~~(n / @out_block_len)
       out = nblocks * @in_block_len
       if (rem = n % @out_block_len) > 0
-        out += Math.floor(rem * @log58 / 8 )
+        out += Math.floor(rem * @log_base/ 8 )
       out
 
 #=====================================================================

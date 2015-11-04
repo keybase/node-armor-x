@@ -10,15 +10,6 @@ test = (T,nm,raw,swizzler) ->
   b64_2 = raw2.toString('base64')
   T.equal b64, b64_2, nm
 
-exports.test_bad_alphabet = (T,cb) ->
-  err = null
-  try
-    x = new a58.encoding.Encoding "a", 0
-  catch e
-    err = e
-  T.assert err?, "should have hit an error"
-  cb()
-
 exports.test_empty = (T,cb) ->
   test T, "empty", new Buffer []
   cb()
