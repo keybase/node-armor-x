@@ -1,6 +1,6 @@
 {
   "name": "armorx",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A Base58 19/26-rate encoder",
   "homepage": "https://github.com/keybase/node-armor58",
   "main": "./lib/main.js",
