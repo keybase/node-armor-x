@@ -1,12 +1,13 @@
 {prng} = require 'crypto'
 
-a58 = require '../..'
+basex = require '../..'
+b58enc = basex.encoding.b58.encoding
 
 test = (T,nm,raw,swizzler) ->
   b64 = raw.toString 'base64'
   swizzler or= (x) -> x
-  b58 = swizzler a58.encoding.std_encoding.encode raw
-  raw2 = a58.encoding.std_encoding.decode b58
+  b58 = swizzler b58enc.encode raw
+  raw2 = b58enc.decode b58
   b64_2 = raw2.toString('base64')
   T.equal b64, b64_2, nm
 
@@ -48,11 +49,11 @@ exports.junk_insertion = (T,cb) ->
   cb()
 
 exports.encoded_len = (T,cb) ->
-  el = a58.encoding.std_encoding.encoded_len 19*2
+  el = b58enc.encoded_len 19*2
   T.equal el, 26*2, "right encoding length"
   cb()
 
 exports.decoded_len = (T,cb) ->
-  dl = a58.encoding.std_encoding.decoded_len 26*2
+  dl = b58enc.decoded_len 26*2
   T.equal dl, 19*2, "right decoding length"
   cb()
