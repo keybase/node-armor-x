@@ -67,10 +67,10 @@ exports.Encoding = class Encoding
     res = nbv 0
     consumed = 0
 
-
     for c,src_p in src when (d = @decode_map[c])?
       res = res.multiply(@base_big).add(nbv(d))
       break if ++consumed is @out_block_len
+
     ret = if consumed is 0 then new Buffer []
     else
       decoded_len = @decoded_len consumed
