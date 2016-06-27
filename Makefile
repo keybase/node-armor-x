@@ -12,7 +12,7 @@ lib/%.js: src/%.iced
 
 $(BUILD_STAMP): \
 	lib/encoding.js \
-	lib/stream.js \
+	lib/replay.js \
 	lib/main.js
 	date > $@
 
