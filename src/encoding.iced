@@ -14,7 +14,7 @@ exports.Encoding = class Encoding
     for a,i in (new Buffer @alphabet, 'utf8')
       @decode_map[a] = i
 
-  # encoder a buffer of binary data into a base58-string encoding
+  # encoder a buffer of binary data into a basex-string encoding
   encode : (src) ->
     inc = @in_block_len
     (@encode_block(src[i...(i+inc)]) for _, i in src by inc).join ''

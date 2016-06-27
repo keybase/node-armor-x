@@ -17,7 +17,7 @@ $(BUILD_STAMP): \
 	date > $@
 
 clean:
-	find lib -type f -name *.js -exec rm {} \;
+	rm -rf lib/*.js
 	rm -rf $(BUILD_STAMP) $(TEST_STAMP) test/browser/test.js
 
 setup:
