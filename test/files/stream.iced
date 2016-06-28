@@ -87,3 +87,34 @@ exports.test_b64_output = (T, cb) ->
 
 		T.equal(stock, encoded_data, "inconsistency found: data=#{data}")
 	cb()
+
+#==========================================================
+#These tests check the consistency and output of a very very large file
+#==========================================================
+
+exports.test_giant_file_consistency = (T, cb) ->
+	encoder = new stream.StreamEncoder(new enc.Encoding(b64enc.alphabet, b64enc.in_block_len))
+	decoder = new stream.StreamDecoder(new enc.Encoding(b64enc.alphabet, b64enc.in_block_len))
+	encoder.pipe(decoder)
+	data_string = ''
+	data_string += Math.floor(Math.random()*10) for j in [0...100000]
+	data = new Buffer(data_string)
+
+	encoder.write(data)
+	decoded_data = decoder.read()
+
+	T.equal(data, decoded_data, "inconsistency found: data=#{data}")
+	cb()
+
+exports.test_giant_file_output = (T, cb) ->
+	encoder = new stream.StreamEncoder(new enc.Encoding(b64enc.alphabet, b64enc.in_block_len))
+	data_string = ''
+	data_string += Math.floor(Math.random()*10) for j in [0...100000]
+	data = new Buffer(data_string)
+	stock = b64stripped.encode(data)
+
+	encoder.write(data)
+	encoded_data = encoder.read().toString()
+
+	T.equal(stock, encoded_data, "inconsistency found: data=#{data}")
+	cb()
