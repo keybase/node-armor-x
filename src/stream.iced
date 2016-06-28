@@ -3,23 +3,24 @@ enc = require('./encoding');
 
 exports.Streamer = class Streamer extends stream.Duplex
 
-	constructor : (block_len) ->
-		alphabet = enc.b58.alphabet if block_len is 58
-		alphabet = enc.b62.alphabet if block_len is 58
-		alphabet = enc.b64.alphabet if block_len is 58
-		@encoder = new Encoding(alphabet, block_len);
-		super({highWaterMark: block_len});
+	constructor : (base) ->
+		encoding = enc.b58 if base is 58
+		encoding = enc.b62 if base is 62
+		encoding = enc.b64 if base is 64
+		console.log('ERRA!') unless encoding?
+		@encoder = encoding.encoding
+		super({highWaterMark: encoding.in_block_len})
 
 	encode : (src) ->
 		src.on('readable', () ->
-			chunk = null;
+			chunk = null
 			while (chunk = src.read(@highWaterMark)) != null
-				@write enc.b64.encoding.encode(chunk);
+				@write enc.b64.encoding.encode(chunk)
 			)
 
 	decode : (src) ->
 		src.on('readable', () ->
-			chunk = null;
+			chunk = null
 			while (chunk = src.read(@highWaterMark)) != null
-				@write(enc.b64.encoding.decode(chunk));
+				@write(enc.b64.encoding.decode(chunk))
 			)
