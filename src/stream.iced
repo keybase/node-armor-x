@@ -1,20 +1,22 @@
-stream = require('stream');
-enc = require('./encoding');
+stream = require('stream')
+enc = require('./encoding')
+
+desired_block_size = 4096
 
 exports.StreamEncoder = class StreamEncoder extends stream.Transform
 
   constructor : (@encoder) ->
-    super({highWaterMark : Math.floor(4096/encoder.in_block_len)})
+    super({highWaterMark : encoder.in_block_len*Math.ceil(desired_block_size/encoder.in_block_len)})
 
   _transform : (chunk, encoding, callback) ->
     @push(@encoder.encode(chunk))
-    callback
+    callback()
 
-exports.StreamDecoder = class Streamer extends stream.Transform
+exports.StreamDecoder = class StreamDecoder extends stream.Transform
 
   constructor : (@encoder) ->
-    super({highWaterMark : Math.floor(4096/encoder.out_block_len)})
+    super({highWaterMark : encoder.in_block_len*Math.ceil(desired_block_size/encoder.out_block_len)})
 
   _transform : (chunk, encoding, callback) ->
     @push(@encoder.decode(chunk))
-    callback
+    callback()
