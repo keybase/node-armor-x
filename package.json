@@ -1,12 +1,12 @@
 {
-  "name": "armorx",
+  "name": "node-armor-x",
   "version": "0.0.2",
-  "description": "A Base58 19/26-rate encoder",
-  "homepage": "https://github.com/keybase/node-armor58",
+  "description": "A Base58/62/64 encoder/decoder",
+  "homepage": "https://github.com/keybase/node-armor-x",
   "main": "./lib/main.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/keybase/node-armor58.git"
+    "url": "https://github.com/keybase/node-armor-x.git"
   },
   "license": "BSD-3-Clause",
   "dependencies": {
