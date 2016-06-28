@@ -1,14 +1,25 @@
-enc = require './encoding'
-http = require('http');
-b64 = enc.b64.encoding
+stream = require('stream');
+enc = require('./encoding');
 
-stream_data = (src, dst) ->
-	src.on 'data', (chunk) ->
-		dst.write(b64.decode(new Buffer chunk, 'utf-8'));
+exports.Streamer = class Streamer extends stream.Duplex
 
-server = http.createServer (req, res) ->
-	stream_data(req, res);
-	req.on 'end', ->
-		res.end();
+	constructor : (block_len) ->
+		alphabet = enc.b58.alphabet if block_len is 58
+		alphabet = enc.b62.alphabet if block_len is 58
+		alphabet = enc.b64.alphabet if block_len is 58
+		@encoder = new Encoding(alphabet, block_len);
+		super({highWaterMark: block_len});
 
-server.listen(39393);
+	encode : (src) ->
+		src.on('readable', () ->
+			chunk = null;
+			while (chunk = src.read(@highWaterMark)) != null
+				@write enc.b64.encoding.encode(chunk);
+			)
+
+	decode : (src) ->
+		src.on('readable', () ->
+			chunk = null;
+			while (chunk = src.read(@highWaterMark)) != null
+				@write(enc.b64.encoding.decode(chunk));
+			)
