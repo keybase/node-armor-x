@@ -15,12 +15,12 @@ exports.Streamer = class Streamer extends stream.Duplex
 		src.on('readable', () ->
 			chunk = null
 			while (chunk = src.read(@highWaterMark)) != null
-				@write enc.b64.encoding.encode(chunk)
+				@write(@encoder.encode(chunk))
 			)
 
 	decode : (src) ->
 		src.on('readable', () ->
 			chunk = null
 			while (chunk = src.read(@highWaterMark)) != null
-				@write(enc.b64.encoding.decode(chunk))
+				@write(@encoder.decode(chunk))
 			)
