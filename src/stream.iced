@@ -1,26 +1,18 @@
 stream = require('stream');
 enc = require('./encoding');
 
-exports.Streamer = class Streamer extends stream.Duplex
+exports.StreamEncoder = class StreamEncoder extends stream.Transform
 
-	constructor : (base) ->
-		encoding = enc.b58 if base is 58
-		encoding = enc.b62 if base is 62
-		encoding = enc.b64 if base is 64
-		console.log('ERRA!') unless encoding?
-		@encoder = encoding.encoding
-		super({highWaterMark: encoding.in_block_len})
+	constructor : (@encoder) ->
+		super({highWaterMark : encoder.in_block_len})
 
-	encode : (src) ->
-		src.on('readable', () ->
-			chunk = null
-			while (chunk = src.read(@highWaterMark)) != null
-				@write(@encoder.encode(chunk))
-			)
+	_transform : (chunk, encoding, callback) ->
+			@push(@encoder.encode(chunk))
 
-	decode : (src) ->
-		src.on('readable', () ->
-			chunk = null
-			while (chunk = src.read(@highWaterMark)) != null
-				@write(@encoder.decode(chunk))
-			)
+exports.StreamDecoder = class Streamer extends stream.Transform
+
+	constructor : (@encoder) ->
+		super({highWaterMark : encoder.out_block_len})
+
+	_transform : (chunk, encoding, callback) ->
+			@push(@encoder.decode(chunk))
