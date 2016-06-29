@@ -17,10 +17,10 @@ exports.StreamEncoder = class StreamEncoder extends stream.Transform
 
 exports.StreamDecoder = class StreamDecoder extends stream.Transform
 
-  constructor : (@encoder) ->
-    super({highWaterMark : calculate_block_size(encoder.out_block_len)})
+  constructor : (@decoder) ->
+    super({highWaterMark : calculate_block_size(decoder.out_block_len)})
 
   _transform : (chunk, encoding, cb) ->
-    @push(@encoder.decode(chunk))
+    @push(@decoder.decode(chunk))
     @read(0)
     cb()
