@@ -1,26 +1,54 @@
 stream = require('stream')
 enc = require('./encoding')
 
-desired_block_size = 4096
-calculate_block_size = (input_length) ->
-  input_length*Math.floor(desired_block_size/input_length)
+desired_high_water_mark = 4096
+calculate_high_water_mark = (input_length) ->
+  input_length*Math.floor(desired_high_water_mark/input_length)
 
 exports.StreamEncoder = class StreamEncoder extends stream.Transform
 
   constructor : (@encoder) ->
-    super({highWaterMark : calculate_block_size(encoder.in_block_len)})
+    @extra = null
+    @block_size = @encoder.in_block_len
+    super({highWaterMark : calculate_high_water_mark(encoder.in_block_len)})
 
   _transform : (chunk, encoding, cb) ->
+    if @extra
+      chunk = Buffer.concat([@extra, chunk])
+      @extra = null
+
+    remainder = chunk.length % @block_size
+    if remainder isnt 0
+      @extra = chunk[chunk.length-remainder...chunk.length]
+      chunk = chunk[0...chunk.length-remainder]
+
     @push(@encoder.encode(chunk))
-    @read(0)
+    cb()
+
+  _flush = (cb) ->
+    if @extra then @push(@encoder.encode(extra))
     cb()
 
 exports.StreamDecoder = class StreamDecoder extends stream.Transform
 
   constructor : (@decoder) ->
-    super({highWaterMark : calculate_block_size(decoder.out_block_len)})
+    @extra = null
+    @block_size = @decoder.out_block_len
+    super({highWaterMark : calculate_high_water_mark(decoder.out_block_len)})
 
   _transform : (chunk, encoding, cb) ->
+    if @extra
+      chunk = Buffer.concat([@extra, chunk])
+      @extra = null
+
+    remainder = chunk.length % @block_size
+    if remainder isnt 0
+      @extra = chunk[chunk.length-remainder...chunk.length]
+      chunk = chunk[0...chunk.length-remainder]
+
     @push(@decoder.decode(chunk))
-    @read(0)
+    cb()
+
+  _flush = (cb) ->
+    if @extra then @push(@decoder.decode(extra))
     cb()
