@@ -9,6 +9,13 @@ enc = require('../../src/encoding.iced')
 loop_limit = 5000
 loop_skip = 29
 
+first_different_byte = (buf1, buf2) ->
+  limit = if buf1.length < buf2.length then buf1.length else buf2.length
+  for i in [0...limit]
+    if buf1[i] != buf2[i]
+      return i
+  return -1
+
 stream_random_data = (strm, len) ->
   data = prng(len)
   i = 0
@@ -41,7 +48,7 @@ test_bx_output = (T, base, len, stock_func) ->
 
   T.equal(stock, encoded_data, "bad output found: base=#{base} len=#{len}")
 
-test_bx_streaming_correctness = (T, base, len, stock_func) ->
+test_bx_streaming_correctness = (T, base, len) ->
   encoding = encoding_for_base(base)
   encoder = new stream.StreamEncoder(encoding)
   block_encoder = new stream.StreamEncoder(encoding)
@@ -50,8 +57,9 @@ test_bx_streaming_correctness = (T, base, len, stock_func) ->
   block_encoder.write(data)
   encoded_data = encoder.read()
   block_encoded_data = block_encoder.read()
+  fdiff = first_different_byte(encoded_data, block_encoded_data)
 
-  T.equal(encoded_data, block_encoded_data, "max was right: base=#{base} len=#{len}")
+  T.equal(encoded_data, block_encoded_data, "max was right: base=#{base} len=#{len} fdiff=#{fdiff}")
 
 encoding_for_base = (base) ->
   switch base
@@ -94,4 +102,9 @@ exports.test_b64_consistency = (T, cb) ->
 exports.test_b64_output = (T, cb) ->
   for i in [1...loop_limit] by loop_skip
     test_bx_output(T, 64, i, b64stock.encode)
+  cb()
+
+exports.test_b62_streaming_correctness = (T, cb) ->
+  for i in [1...loop_limit] by loop_skip
+    test_bx_streaming_correctness(T, 62, i)
   cb()
