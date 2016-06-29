@@ -28,21 +28,30 @@ test_bx_consistency = (T, base, len) ->
 
   data = stream_random_data(encoder, len)
   decoded_data = decoder.read()
-  leftovers = encoder.read(0)
 
-  T.equal(data, decoded_data, "inconsistency found: base=#{base} len=#{len} leftovers=#{leftovers}")
+  T.equal(data, decoded_data, "inconsistency found: base=#{base} len=#{len}")
 
 test_bx_output = (T, base, len, stock_func) ->
   encoding = encoding_for_base(base)
   encoder = new stream.StreamEncoder(encoding)
-  data = prng(len)
+
+  data = stream_random_data(encoder, len)
   stock = stock_func(data)
-
-  encoder.write(data)
   encoded_data = encoder.read().toString()
-  leftovers = encoder.read(0)
 
-  T.equal(stock, encoded_data, "bad output found: base=#{base} len=#{len} leftovers=#{leftovers}")
+  T.equal(stock, encoded_data, "bad output found: base=#{base} len=#{len}")
+
+test_bx_streaming_correctness = (T, base, len, stock_func) ->
+  encoding = encoding_for_base(base)
+  encoder = new stream.StreamEncoder(encoding)
+  block_encoder = new stream.StreamEncoder(encoding)
+
+  data = stream_random_data(encoder, len)
+  block_encoder.write(data)
+  encoded_data = encoder.read()
+  block_encoded_data = block_encoder.read()
+
+  T.equal(encoded_data, block_encoded_data, "max was right: base=#{base} len=#{len}")
 
 encoding_for_base = (base) ->
   switch base
