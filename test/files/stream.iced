@@ -7,7 +7,7 @@ enc = require('../../src/encoding.iced')
 #==========================================================
 
 loop_limit = 5000
-loop_skip = 11
+loop_skip = 27
 
 stream_random_data = (strm, len) ->
 	data = prng(len)
@@ -28,7 +28,7 @@ test_bx_consistency = (T, base, len) ->
 
 	data = stream_random_data(encoder, len)
 	decoded_data = decoder.read()
-	leftovers = decoder.read(0)
+	leftovers = encoder.read(0)
 
 	T.equal(data, decoded_data, "inconsistency found: base=#{base} len=#{len} leftovers=#{leftovers}")
 
@@ -85,3 +85,4 @@ exports.test_b64_consistency = (T, cb) ->
 exports.test_b64_output = (T, cb) ->
 	for i in [1...loop_limit] by loop_skip
 		test_bx_output(T, 64, i, b64stock.encode)
+	cb()

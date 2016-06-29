@@ -12,6 +12,7 @@ exports.StreamEncoder = class StreamEncoder extends stream.Transform
 
   _transform : (chunk, encoding, cb) ->
     @push(@encoder.encode(chunk))
+    @read(0)
     cb()
 
 exports.StreamDecoder = class StreamDecoder extends stream.Transform
@@ -21,4 +22,5 @@ exports.StreamDecoder = class StreamDecoder extends stream.Transform
 
   _transform : (chunk, encoding, cb) ->
     @push(@encoder.decode(chunk))
+    @read(0)
     cb()
