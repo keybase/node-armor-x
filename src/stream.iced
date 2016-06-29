@@ -3,7 +3,7 @@ enc = require('./encoding')
 
 desired_block_size = 4096
 calculate_block_size = (input_length) ->
-  input_length*Math.ceil(desired_block_size/input_length)
+  input_length*Math.floor(desired_block_size/input_length)
 
 exports.StreamEncoder = class StreamEncoder extends stream.Transform
 
