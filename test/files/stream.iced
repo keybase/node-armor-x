@@ -114,9 +114,14 @@ exports.test_b64_output = (T, cb) ->
   for i in [1...loop_limit] by loop_skip
     test_bx_output(T, 64, i, b64stock.encode)
   cb()
-###
+
 exports.test_b62_streaming_correctness = (T, cb) ->
   for i in [1...loop_limit] by loop_skip
     test_bx_streaming_correctness(T, 62, i)
   cb()
-###
+
+exports.test_b64_giant_file_output = (T, cb) ->
+	test_bx_output(T, 64, 100000, b64stock.encode)
+
+exports.test_b62_giant_file_consistency = (T, cb) ->
+	test_bx_consistency(T, 62, 100000)
