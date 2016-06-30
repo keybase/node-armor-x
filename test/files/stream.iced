@@ -21,7 +21,7 @@ stream_random_data = (strm, len) ->
   data = prng(len)
   i = 0
   j = 0
-  while i < data.length
+  while j < data.length
     j = i + prng(1)[0]
     strm.write(data[i...j])
     i = j
