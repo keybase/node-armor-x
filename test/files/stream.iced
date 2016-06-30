@@ -52,6 +52,8 @@ test_bx_consistency = (T, base, len) ->
   encoder.pipe(decoder)
 
   data = stream_random_data(encoder, len)
+  encoder.end()
+  decoder.end()
   decoded_data = decoder.read()
 
   T.equal(data, decoded_data, "inconsistency found: base=#{base} len=#{len}")
@@ -62,6 +64,7 @@ test_bx_output = (T, base, len, stock_func) ->
   encoder = new stream.StreamEncoder(encoding)
 
   data = stream_random_data(encoder, len)
+  encoder.end()
   stock = new Buffer(stock_func(data))
   encoded_data = encoder.read()
 
@@ -74,7 +77,9 @@ test_bx_streaming_correctness = (T, base, len) ->
   block_encoder = new stream.StreamEncoder(encoding)
 
   data = stream_random_data(encoder, len)
+  encoder.end()
   block_encoder.write(data)
+  block_encoder.end()
   encoded_data = encoder.read()
   block_encoded_data = block_encoder.read()
   fdiff = first_different_byte(encoded_data, block_encoded_data)
