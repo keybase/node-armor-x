@@ -27,6 +27,7 @@ exports.StreamEncoder = class StreamEncoder extends stream.Transform
 
   _flush : (cb) ->
     if @extra then @push(@encoder.encode(@extra))
+    @push(new Buffer(''))
     cb()
 
 exports.StreamDecoder = class StreamDecoder extends stream.Transform
@@ -51,4 +52,5 @@ exports.StreamDecoder = class StreamDecoder extends stream.Transform
 
   _flush : (cb) ->
     if @extra then @push(@decoder.decode(@extra))
+    @push(new Buffer(''))
     cb()

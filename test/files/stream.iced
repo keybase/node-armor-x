@@ -1,5 +1,6 @@
 {prng} = require('crypto')
 stream = require('../../src/stream.iced')
+to_buffer = require ('../../src/stream_to_buffer.iced')
 enc = require('../../src/encoding.iced')
 
 #==========================================================
@@ -48,13 +49,15 @@ test_bx_consistency = (T, base, len) ->
   encoding = encoding_for_base(base)
   encoder = new stream.StreamEncoder(encoding)
   decoder = new stream.StreamDecoder(encoding)
+  stb = new to_buffer.StreamToBuffer()
 
   encoder.pipe(decoder)
+  decoder.pipe(stb)
 
   data = stream_random_data(encoder, len)
   encoder.end()
   decoder.end()
-  decoded_data = decoder.read()
+  decoded_data = stb.getBuffer()
 
   T.equal(data, decoded_data, "inconsistency found: base=#{base} len=#{len}")
 
@@ -62,11 +65,14 @@ test_bx_consistency = (T, base, len) ->
 test_bx_output = (T, base, len, stock_func) ->
   encoding = encoding_for_base(base)
   encoder = new stream.StreamEncoder(encoding)
+  stb = new to_buffer.StreamToBuffer()
+
+  encoder.pipe(stb)
 
   data = stream_random_data(encoder, len)
   encoder.end()
   stock = new Buffer(stock_func(data))
-  encoded_data = encoder.read()
+  encoded_data = stb.getBuffer()
 
   T.equal(stock, encoded_data, "bad output found: base=#{base} len=#{len}")
 
@@ -75,16 +81,20 @@ test_bx_streaming_correctness = (T, base, len) ->
   encoding = encoding_for_base(base)
   encoder = new stream.StreamEncoder(encoding)
   block_encoder = new stream.StreamEncoder(encoding)
+  stb1 = new to_buffer.StreamToBuffer()
+  stb2 = new to_buffer.StreamToBuffer()
+
+  encoder.pipe(stb1)
+  block_encoder.pipe(stb2)
 
   data = stream_random_data(encoder, len)
   encoder.end()
   block_encoder.write(data)
   block_encoder.end()
-  encoded_data = encoder.read()
-  block_encoded_data = block_encoder.read()
-  fdiff = first_different_byte(encoded_data, block_encoded_data)
+  encoded_data = stb1.getBuffer()
+  block_encoded_data = stb2.getBuffer()
 
-  T.equal(encoded_data, block_encoded_data, "max was right: base=#{base} len=#{len} fdiff=#{fdiff}")
+  T.equal(encoded_data, block_encoded_data, "incorrect blocking found: base=#{base} len=#{len}")
 
 #==========================================================
 #These tests encode then immediately decode, and compare the result to the original text
@@ -121,7 +131,9 @@ exports.test_b62_streaming_correctness = (T, cb) ->
   cb()
 
 exports.test_b64_giant_file_output = (T, cb) ->
-	test_bx_output(T, 64, 100000, b64stock.encode)
+  test_bx_output(T, 64, 100000, b64stock.encode)
+  cb()
 
 exports.test_b62_giant_file_consistency = (T, cb) ->
-	test_bx_consistency(T, 62, 100000)
+  test_bx_consistency(T, 62, 100000)
+  cb()
