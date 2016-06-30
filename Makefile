@@ -17,7 +17,7 @@ $(BUILD_STAMP): \
 	date > $@
 
 clean:
-	find lib -type f -name *.js -exec rm {} \;
+	rm -rf lib/*.js
 	rm -rf $(BUILD_STAMP) $(TEST_STAMP) test/browser/test.js
 
 setup:
@@ -47,4 +47,4 @@ $(TEST_STAMP): test/browser/test.js
 test/browser/test.js: test/browser/main.iced $(BUILD_STAMP)
 	$(BROWSERIFY) -t icsify $< > $@
 
-.PHONY: clean setup test  test-browser coverage
+.PHONY: clean setup test test-browser coverage

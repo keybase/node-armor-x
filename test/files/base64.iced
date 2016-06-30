@@ -1,4 +1,3 @@
-
 {prng} = require 'crypto'
 
 basex = require '../..'

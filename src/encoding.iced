@@ -14,7 +14,7 @@ exports.Encoding = class Encoding
     for a,i in (new Buffer @alphabet, 'utf8')
       @decode_map[a] = i
 
-  # encoder a buffer of binary data into a base58-string encoding
+  # encoder a buffer of binary data into a basex-string encoding
   encode : (src) ->
     inc = @in_block_len
     (@encode_block(src[i...(i+inc)]) for _, i in src by inc).join ''
@@ -67,10 +67,10 @@ exports.Encoding = class Encoding
     res = nbv 0
     consumed = 0
 
-
     for c,src_p in src when (d = @decode_map[c])?
       res = res.multiply(@base_big).add(nbv(d))
       break if ++consumed is @out_block_len
+
     ret = if consumed is 0 then new Buffer []
     else
       decoded_len = @decoded_len consumed
