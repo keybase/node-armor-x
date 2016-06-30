@@ -4,19 +4,12 @@ to_buffer = require ('../../src/stream_to_buffer.iced')
 enc = require('../../src/encoding.iced')
 
 #==========================================================
-#Helper functions
+#Helper functions/constants
 #==========================================================
 
 loop_limit = 5000
 loop_skip = 29
-
-first_different_byte = (buf1, buf2) ->
-  if not buf1 or not buf2 then return -2
-  limit = if buf1.length < buf2.length then buf1.length else buf2.length
-  for i in [0...limit]
-    if buf1[i] != buf2[i]
-      return i
-  return -1
+bases = [58, 62, 64]
 
 #streams random-length chunks of random data into a stream. returns all data written as a buffer
 stream_random_data = (strm, len) ->
@@ -35,14 +28,9 @@ encoding_for_base = (base) ->
     when 62 then enc.b62.encoding
     when 64 then enc.b64.encoding
 
-b64stock =
-  encode : (x) ->
-    r = new RegExp('=', 'g')
-    x.toString('base64').replace(r, '')
-  decode : (x) ->
-    until (x.length % 4) is 0
-      x += "="
-    return new Buffer x, 'base64'
+#==========================================================
+#Base-agnostic testing functions
+#==========================================================
 
 #encode->decode, compare against original
 test_bx_consistency = (T, base, len) ->
@@ -62,7 +50,7 @@ test_bx_consistency = (T, base, len) ->
   T.equal(data, decoded_data, "inconsistency found: base=#{base} len=#{len}")
 
 #encode, compare against a known good encoding function
-test_bx_output = (T, base, len, stock_func) ->
+test_bx_output = (T, base, len) ->
   encoding = encoding_for_base(base)
   encoder = new stream.StreamEncoder(encoding)
   stb = new to_buffer.StreamToBuffer()
@@ -71,7 +59,7 @@ test_bx_output = (T, base, len, stock_func) ->
 
   data = stream_random_data(encoder, len)
   encoder.end()
-  stock = new Buffer(stock_func(data))
+  stock = new Buffer(encoding.encode(data))
   encoded_data = stb.getBuffer()
 
   T.equal(stock, encoded_data, "bad output found: base=#{base} len=#{len}")
@@ -100,40 +88,41 @@ test_bx_streaming_correctness = (T, base, len) ->
 #These tests encode then immediately decode, and compare the result to the original text
 #=========================================================
 
-exports.test_b58_consistency = (T, cb) ->
-  for i in [1...loop_limit] by loop_skip
-    test_bx_consistency(T, 58, i)
+exports.test_consistency = (T, cb) ->
+  for base in bases
+    for i in [1...loop_limit] by loop_skip
+      test_bx_consistency(T, base, i)
   cb()
-
-exports.test_b62_consistency = (T, cb) ->
-  for i in [1...loop_limit] by loop_skip
-    test_bx_consistency(T, 62, i)
-  cb()
-
-exports.test_b64_consistency = (T, cb) ->
-  for i in [1...loop_limit] by loop_skip
-    test_bx_consistency(T, 64, i)
-  cb()
-
 
 #=========================================================
 #These tests check whether or not the encoding is valid
 #=========================================================
 
-exports.test_b64_output = (T, cb) ->
-  for i in [1...loop_limit] by loop_skip
-    test_bx_output(T, 64, i, b64stock.encode)
+exports.test_output = (T, cb) ->
+  for base in bases
+    for i in [1...loop_limit] by loop_skip
+      test_bx_output(T, base, i)
   cb()
 
-exports.test_b62_streaming_correctness = (T, cb) ->
-  for i in [1...loop_limit] by loop_skip
-    test_bx_streaming_correctness(T, 62, i)
+#=========================================================
+#These tests check whether or not the encoder blocks properly
+#=========================================================
+
+exports.test_streaming_correctness = (T, cb) ->
+  for base in bases
+    for i in [1...loop_limit] by loop_skip
+      test_bx_streaming_correctness(T, base, i)
   cb()
 
-exports.test_b64_giant_file_output = (T, cb) ->
-  test_bx_output(T, 64, 100000, b64stock.encode)
+#=========================================================
+#These tests try consistency and output for a 200k file
+#=========================================================
+
+exports.test_giant_file_consistency = (T, cb) ->
+  for base in bases
+    test_bx_consistency(T, base, 200000)
   cb()
 
-exports.test_b62_giant_file_consistency = (T, cb) ->
-  test_bx_consistency(T, 62, 100000)
-  cb()
+exports.test_giant_file_output = (T, cb) ->
+  for base in bases
+    test_bx_output(T, base, 200000)
