@@ -51,7 +51,7 @@ test_bx_consistency = (T, base, len) ->
   encoder.pipe(decoder)
 
   data = stream_random_data(encoder, len)
-	decoder.read(0)
+  decoder.read(0)
   decoded_data = decoder.read()
 
   T.equal(data, decoded_data, "inconsistency found: base=#{base} len=#{len}")

@@ -10,7 +10,7 @@ exports.StreamEncoder = class StreamEncoder extends stream.Transform
   constructor : (@encoder) ->
     @extra = null
     @block_size = @encoder.in_block_len
-    super({highWaterMark : calculate_high_water_mark(encoder.in_block_len)})
+    super({highWaterMark : calculate_high_water_mark(@block_size)})
 
   _transform : (chunk, encoding, cb) ->
     if @extra
@@ -34,7 +34,7 @@ exports.StreamDecoder = class StreamDecoder extends stream.Transform
   constructor : (@decoder) ->
     @extra = null
     @block_size = @decoder.out_block_len
-    super({highWaterMark : calculate_high_water_mark(decoder.out_block_len)})
+    super({highWaterMark : calculate_high_water_mark(@block_size)})
 
   _transform : (chunk, encoding, cb) ->
     if @extra
