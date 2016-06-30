@@ -3,7 +3,7 @@ stream = require('stream')
 exports.StreamToBuffer = class StreamToBuffer extends stream.Transform
 
   constructor : (options) ->
-    @buf = new Buffer('')
+    @buf = new Buffer([])
     super(options)
 
   _write : (chunk, encoding, cb) ->
