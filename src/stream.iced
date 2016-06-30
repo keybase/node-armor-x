@@ -19,8 +19,8 @@ exports.StreamEncoder = class StreamEncoder extends stream.Transform
 
     remainder = chunk.length % @block_size
     if remainder isnt 0
-      @extra = chunk[chunk.length-remainder...chunk.length]
-      chunk = chunk[0...chunk.length-remainder]
+      @extra = chunk.slice(chunk.length-remainder)
+      chunk = chunk.slice(0, chunk.length-remainder)
 
     @push(@encoder.encode(chunk))
     cb()
@@ -43,8 +43,8 @@ exports.StreamDecoder = class StreamDecoder extends stream.Transform
 
     remainder = chunk.length % @block_size
     if remainder isnt 0
-      @extra = chunk[chunk.length-remainder...chunk.length]
-      chunk = chunk[0...chunk.length-remainder]
+      @extra = chunk.slice(chunk.length-remainder)
+      chunk = chunk.slice(0, chunk.length-remainder)
 
     @push(@decoder.decode(chunk))
     cb()
