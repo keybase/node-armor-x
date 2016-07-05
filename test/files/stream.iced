@@ -126,3 +126,4 @@ exports.test_giant_file_consistency = (T, cb) ->
 exports.test_giant_file_output = (T, cb) ->
   for base in bases
     test_bx_output(T, base, 200000)
+  cb()

@@ -11,7 +11,8 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "bn": "^1.0.1",
-    "iced-runtime": "^1.0.3"
+    "iced-runtime": "^1.0.3",
+    "keybase-chunk-stream": "^0.1.2"
   },
   "author": "Maxwell Krohn",
   "devDependencies": {
