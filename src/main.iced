@@ -1,2 +1,2 @@
-
-exports.encoding = require './encoding'
+exports.stream = require('./stream')
+exports.encoding = require('./encoding')
