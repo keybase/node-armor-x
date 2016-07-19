@@ -36,7 +36,7 @@ exports.Encoding = class Encoding
     # Left shift away all bits that are always going to be 0
     shift = @extra_bits {encoded_len, decoded_len : block.length }
     # The raw big-endian representation of the block
-    num = (nbi().fromBuffer block).shiftLeft shift
+    num = (nbi().fromBuffer block)
 
     chars = while num.compareTo(BigInteger.ZERO) > 0
       [num,r] = num.divideAndRemainder @base_big
@@ -75,7 +75,7 @@ exports.Encoding = class Encoding
     else
       decoded_len = @decoded_len consumed
       shift = @extra_bits {encoded_len : consumed, decoded_len }
-      res = new Buffer res.shiftRight(shift).toByteArray()
+      res = new Buffer res.toByteArray()
 
       padlen = @decoded_len(consumed) - res.length
       pad = new Buffer (0 for i in [0...padlen] by 1)

@@ -8,7 +8,7 @@ enc = require('../../src/encoding.iced')
 #==========================================================
 
 loop_limit = 5000
-loop_skip = 29
+loop_skip = 271
 bases = [58, 62, 64]
 
 #streams random-length chunks of random data into a stream. returns all data written as a buffer
@@ -126,4 +126,13 @@ exports.test_giant_file_consistency = (T, cb) ->
 exports.test_giant_file_output = (T, cb) ->
   for base in bases
     test_bx_output(T, base, 200000)
+  cb()
+
+exports.test_foo = (T, cb) ->
+  encoder = new stream.StreamEncoder(enc.b62.encoding)
+  stb = new to_buffer.StreamToBuffer()
+  encoder.pipe(stb)
+  encoder.write('foo')
+  encoder.end()
+  T.equal(new Buffer('0SAPP'), stb.getBuffer(), "Not foo!")
   cb()
