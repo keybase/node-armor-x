@@ -12,7 +12,7 @@
   "dependencies": {
     "bn": "^1.0.1",
     "iced-runtime": "^1.0.3",
-    "keybase-chunk-stream": "^0.1.4"
+    "keybase-chunk-stream": "^0.1.6"
   },
   "author": "Maxwell Krohn",
   "devDependencies": {
