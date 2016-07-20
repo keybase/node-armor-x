@@ -15,9 +15,11 @@ exports.Encoding = class Encoding
       @decode_map[a] = i
 
   # encoder a buffer of binary data into a basex-string encoding
-  encode : (src) ->
+  # specifying {old_shift : true} for opts causes the encoding to left-shift extra bits. see https://saltpack.org/armoring#comparison-to-base64
+  encode : (src, opts) ->
+    if opts?.old_shift then old_shift = opts.old_shift else old_shift = false
     inc = @in_block_len
-    (@encode_block(src[i...(i+inc)]) for _, i in src by inc).join ''
+    (@encode_block(src[i...(i+inc)], old_shift) for _, i in src by inc).join ''
 
   extra_bits : ({decoded_len, encoded_len}) ->
     # number of bits that can be encoded with the encoded len
@@ -29,14 +31,14 @@ exports.Encoding = class Encoding
     encoded_bits - decoded_bits
 
   # encode a block of length @in_block_len or less....
-  encode_block : (block) ->
+  encode_block : (block, old_shift) ->
     # This is the minimal number of encoding bytes it takes to
     # output the input block
     encoded_len = @encoded_len block.length
-    # Left shift away all bits that are always going to be 0
-    shift = @extra_bits {encoded_len, decoded_len : block.length }
     # The raw big-endian representation of the block
-    num = (nbi().fromBuffer block).shiftLeft shift
+    num = (nbi().fromBuffer block)
+    # Left shift away all bits that are always going to be 0
+    if old_shift then num = num.shiftLeft(@extra_bits {encoded_len, decoded_len : block.length})
 
     chars = while num.compareTo(BigInteger.ZERO) > 0
       [num,r] = num.divideAndRemainder @base_big
@@ -56,14 +58,16 @@ exports.Encoding = class Encoding
         out += Math.ceil(rem*8/@log_base)
       out
 
-  decode : (src) ->
+  # specifying {old_shift : true} for opts causes the decoding to right-shift extra bits. see https://saltpack.org/armoring#comparison-to-base64
+  decode : (src, opts) ->
+    if opts?.old_shift then old_shift = opts.old_shift else old_shift = false
     src = new Buffer src, 'utf8'
     bufs = while src.length
-      [dst,src] = @decode_block src
+      [dst,src] = @decode_block src, old_shift
       dst
     Buffer.concat bufs
 
-  decode_block : (src) ->
+  decode_block : (src, old_shift) ->
     res = nbv 0
     consumed = 0
 
@@ -74,8 +78,8 @@ exports.Encoding = class Encoding
     ret = if consumed is 0 then new Buffer []
     else
       decoded_len = @decoded_len consumed
-      shift = @extra_bits {encoded_len : consumed, decoded_len }
-      res = new Buffer res.shiftRight(shift).toByteArray()
+      if old_shift then res = res.shiftRight(@extra_bits {encoded_len : consumed, decoded_len})
+      res = new Buffer res.toByteArray()
 
       padlen = @decoded_len(consumed) - res.length
       pad = new Buffer (0 for i in [0...padlen] by 1)
