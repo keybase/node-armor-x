@@ -19,6 +19,6 @@ exports.test_b64_compat = (T,cb) ->
     for padlen in [0...pad.length]
       buf = Buffer.concat [ pad[0...padlen], x[0...i] ]
       e1 = b64stripped.encode buf
-      e2 = b64enc.encode buf, true
+      e2 = b64enc.encode buf, {old_shift : true}
       T.equal e1, e2, "got same encryption buf=#{buf}"
   cb()

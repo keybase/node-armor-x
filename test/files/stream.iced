@@ -8,6 +8,7 @@ enc = require('../../src/encoding.iced')
 #==========================================================
 
 loop_limit = 5000
+# some random-ish large-ish prime
 loop_skip = 271
 bases = [58, 62, 64]
 
@@ -134,5 +135,11 @@ exports.test_foo = (T, cb) ->
   encoder.pipe(stb)
   encoder.write('foo')
   encoder.end()
-  T.equal(new Buffer('0SAPP'), stb.getBuffer(), "Not foo!")
+  T.equal(new Buffer('0SAPP'), stb.getBuffer(), 'Not foo on encode!')
+  decoder = new stream.StreamDecoder(enc.b62.encoding)
+  stb = new to_buffer.StreamToBuffer()
+  decoder.pipe(stb)
+  decoder.write('0SAPP')
+  decoder.end()
+  T.equal(new Buffer('foo'), stb.getBuffer(), 'Not foo on decode!')
   cb()
