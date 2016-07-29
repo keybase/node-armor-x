@@ -13,6 +13,7 @@ lib/%.js: src/%.iced
 $(BUILD_STAMP): \
 	lib/encoding.js \
 	lib/stream.js \
+	lib/stream_to_buffer.js \
 	lib/main.js
 	date > $@
 
@@ -33,7 +34,7 @@ build: $(BUILD_STAMP)
 browser: $(BROWSER)
 
 $(BROWSER): lib/main.js $(BUILD_STAMP)
-	$(BROWSERIFY) -s libweb $< > $@
+	$(BROWSERIFY) -s basex $< > $@
 
 test-server: $(BUILD_STAMP)
 	$(ICED) test/run.iced
