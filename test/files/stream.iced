@@ -7,7 +7,7 @@ enc = require('../../src/encoding.iced')
 #Helper functions/constants
 #==========================================================
 
-loop_limit = 5000
+loop_limit = 1024**2
 # some random-ish large-ish prime
 loop_skip = 271
 bases = [58, 62, 64]
