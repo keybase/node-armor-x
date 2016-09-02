@@ -67,9 +67,12 @@ test_bx_output = (T, {base, len}, cb) ->
 #=========================================================
 
 exports.test_consistency = (T, cb) ->
+  start = new Date().getTime()
   for base in bases
     for i in [1...loop_limit] by loop_skip
       await test_bx_consistency(T, {base, len : i}, defer())
+  end = new Date().getTime()
+  console.log("Time: #{end - start}")
   cb()
 
 #=========================================================
@@ -77,9 +80,12 @@ exports.test_consistency = (T, cb) ->
 #=========================================================
 
 exports.test_output = (T, cb) ->
+  start = new Date().getTime()
   for base in bases
     for i in [1...loop_limit] by loop_skip
       await test_bx_output(T, {base, len : i}, defer())
+  end = new Date().getTime()
+  console.log("Time: #{end - start}")
   cb()
 
 #=========================================================
@@ -87,13 +93,19 @@ exports.test_output = (T, cb) ->
 #=========================================================
 
 exports.test_giant_file_consistency = (T, cb) ->
+  start = new Date().getTime()
   for base in bases
     await test_bx_consistency(T, {base, len : giant_file}, defer())
+  end = new Date().getTime()
+  console.log("Time: #{end - start}")
   cb()
 
 exports.test_giant_file_output = (T, cb) ->
+  start = new Date().getTime()
   for base in bases
     await test_bx_output(T, {base, len : giant_file}, defer())
+  end = new Date().getTime()
+  console.log("Time: #{end - start}")
   cb()
 
 exports.test_foo = (T, cb) ->
