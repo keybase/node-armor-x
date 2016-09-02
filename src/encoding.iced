@@ -17,6 +17,7 @@ exports.Encoding = class Encoding
   # encoder a buffer of binary data into a basex-string encoding
   # specifying {old_shift : true} for opts causes the encoding to left-shift extra bits. see https://saltpack.org/armoring#comparison-to-base64
   encode : (src, opts) ->
+    if not src? then return new Buffer('')
     if opts?.old_shift then old_shift = opts.old_shift else old_shift = false
     inc = @in_block_len
     (@encode_block(src[i...(i+inc)], old_shift) for _, i in src by inc).join ''
@@ -60,6 +61,7 @@ exports.Encoding = class Encoding
 
   # specifying {old_shift : true} for opts causes the decoding to right-shift extra bits. see https://saltpack.org/armoring#comparison-to-base64
   decode : (src, opts) ->
+    if not src? then return new Buffer('')
     if opts?.old_shift then old_shift = opts.old_shift else old_shift = false
     src = new Buffer src, 'utf8'
     bufs = while src.length

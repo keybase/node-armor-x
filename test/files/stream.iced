@@ -1,13 +1,16 @@
+{make_esc} = require('iced-error')
 crypto = require('crypto')
-stream = require('../../src/stream.iced')
-to_buffer = require ('../../src/stream_to_buffer.iced')
-enc = require('../../src/encoding.iced')
+util = require('keybase-chunk-stream').util
+basex = require('../..')
+stream = basex.stream
+enc = basex.encoding
 
 #==========================================================
 #Helper functions/constants
 #==========================================================
 
-loop_limit = 1024**2
+giant_file = 524288
+loop_limit = 8192
 # some random-ish large-ish prime
 loop_skip = 271
 bases = [58, 62, 64]
@@ -18,77 +21,58 @@ encoding_for_base = (base) ->
     when 62 then enc.b62.encoding
     when 64 then enc.b64.encoding
 
-# writes random data in random chunk sizes to the given stream
-stream_random_data = (strm, len, cb) ->
-  written = 0
-  expected_results = []
-  while written < len
-    # generate random length
-    await crypto.randomBytes(1, defer(err, index))
-    if err then throw err
-    amt = (index[0] + 1)*16
-
-    # generate random bytes of length amt
-    await crypto.randomBytes(amt, defer(err, buf))
-    if err then throw err
-    written += buf.length
-    expected_results.push(buf)
-
-    # write the buffer
-    await strm.write(buf, defer(err))
-    if err then throw err
-
-  cb(Buffer.concat(expected_results))
-
 #==========================================================
 #Base-agnostic testing functions
 #==========================================================
 
 #encode->decode, compare against original
-test_bx_consistency = (T, base, len) ->
+test_bx_consistency = (T, {base, len}, cb) ->
+  esc = make_esc(cb, "Error in consistency testing")
   encoding = encoding_for_base(base)
   encoder = new stream.StreamEncoder(encoding)
   decoder = new stream.StreamDecoder(encoding)
-  stb = new to_buffer.StreamToBuffer()
+  stb = new util.StreamToBuffer()
 
-  encoder.pipe(decoder)
-  decoder.pipe(stb)
+  encoder.pipe(decoder).pipe(stb)
 
-  await stream_random_data(encoder, len, defer(data))
+  await util.stream_random_data(encoder, len, esc(defer(data)))
   await
     stb.on('finish', defer())
     encoder.end()
 
-  decoded_data = stb.getBuffer()
-
-  T.equal(data, decoded_data, "inconsistency found: base=#{base} len=#{len}")
+  T.equal(data, stb.getBuffer(), "inconsistency found: base=#{base} len=#{len}")
+  cb()
 
 #encode, compare against a known good encoding function
-test_bx_output = (T, base, len) ->
+test_bx_output = (T, {base, len}, cb) ->
+  esc = make_esc(cb, "Error in output testing")
   encoding = encoding_for_base(base)
   encoder = new stream.StreamEncoder(encoding)
-  stb = new to_buffer.StreamToBuffer()
+  stb = new util.StreamToBuffer()
 
   encoder.pipe(stb)
 
-  await stream_random_data(encoder, len, defer(data))
+  await util.stream_random_data(encoder, len, esc(defer(data)))
   await
     stb.on('finish', defer())
     encoder.end()
 
   stock = new Buffer(encoding.encode(data))
-  encoded_data = stb.getBuffer()
 
-  T.equal(stock, encoded_data, "bad output found: base=#{base} len=#{len}")
+  T.equal(stock, stb.getBuffer(), "bad output found: base=#{base} len=#{len}")
+  cb()
 
 #==========================================================
 #These tests encode then immediately decode, and compare the result to the original text
 #=========================================================
 
 exports.test_consistency = (T, cb) ->
+  start = new Date().getTime()
   for base in bases
     for i in [1...loop_limit] by loop_skip
-      test_bx_consistency(T, base, i)
+      await test_bx_consistency(T, {base, len : i}, defer())
+  end = new Date().getTime()
+  console.log("Time: #{end - start}")
   cb()
 
 #=========================================================
@@ -96,9 +80,12 @@ exports.test_consistency = (T, cb) ->
 #=========================================================
 
 exports.test_output = (T, cb) ->
+  start = new Date().getTime()
   for base in bases
     for i in [1...loop_limit] by loop_skip
-      test_bx_output(T, base, i)
+      await test_bx_output(T, {base, len : i}, defer())
+  end = new Date().getTime()
+  console.log("Time: #{end - start}")
   cb()
 
 #=========================================================
@@ -106,26 +93,37 @@ exports.test_output = (T, cb) ->
 #=========================================================
 
 exports.test_giant_file_consistency = (T, cb) ->
+  start = new Date().getTime()
   for base in bases
-    test_bx_consistency(T, base, 200000)
+    await test_bx_consistency(T, {base, len : giant_file}, defer())
+  end = new Date().getTime()
+  console.log("Time: #{end - start}")
   cb()
 
 exports.test_giant_file_output = (T, cb) ->
+  start = new Date().getTime()
   for base in bases
-    test_bx_output(T, base, 200000)
+    await test_bx_output(T, {base, len : giant_file}, defer())
+  end = new Date().getTime()
+  console.log("Time: #{end - start}")
   cb()
 
 exports.test_foo = (T, cb) ->
   encoder = new stream.StreamEncoder(enc.b62.encoding)
-  stb = new to_buffer.StreamToBuffer()
+  stb = new util.StreamToBuffer()
   encoder.pipe(stb)
-  encoder.write('foo')
-  encoder.end()
+  await encoder.write('foo')
+  await
+    stb.on('end', defer())
+    encoder.end()
   T.equal(new Buffer('0SAPP'), stb.getBuffer(), 'Not foo on encode!')
+
   decoder = new stream.StreamDecoder(enc.b62.encoding)
-  stb = new to_buffer.StreamToBuffer()
+  stb = new util.StreamToBuffer()
   decoder.pipe(stb)
   decoder.write('0SAPP')
-  decoder.end()
+  await
+    stb.on('end', defer())
+    decoder.end()
   T.equal(new Buffer('foo'), stb.getBuffer(), 'Not foo on decode!')
   cb()
