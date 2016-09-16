@@ -1,6 +1,6 @@
 {
   "name": "node-armor-x",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A Base58/62/64 encoder/decoder",
   "homepage": "https://github.com/keybase/node-armor-x",
   "main": "./lib/main.js",
